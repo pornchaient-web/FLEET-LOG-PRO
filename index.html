@@ -5,7 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ระบบบันทึกการทำงานและการใช้รถ</title>
     
+    <link rel="manifest" href="manifest.json" />
     <link rel="icon" type="image/png" href="icon.png" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <script>
+      window.__PWA_DEFERRED_PROMPT__ = null;
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        window.__PWA_DEFERRED_PROMPT__ = e;
+        console.log('PWA index.html: Captured beforeinstallprompt event early!');
+        window.dispatchEvent(new CustomEvent('pwa-prompt-captured', { detail: e }));
+      });
+    </script>
   </head>
   <body class="bg-slate-950 text-slate-100 min-h-screen">
     <div id="root"></div>
