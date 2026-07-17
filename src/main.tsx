@@ -11,6 +11,10 @@ createRoot(document.getElementById('root')!).render(
 
 // Helper to get the correct path of the base folder for dynamic subfolders (like GitHub Pages)
 const getBasePath = () => {
+  const win = window as any;
+  if (win.__PWA_BASE_PATH__) {
+    return win.__PWA_BASE_PATH__;
+  }
   const path = window.location.pathname;
   if (path.endsWith(".html")) {
     return path.substring(0, path.lastIndexOf("/") + 1);
@@ -20,7 +24,7 @@ const getBasePath = () => {
 
 const basePath = getBasePath();
 
-// Dynamically set manifest and icon links to handle subpaths perfectly
+// Dynamically set manifest and icon links to handle subpaths perfectly (as a fallback or update)
 try {
   let manifestLink = document.querySelector('link[rel="manifest"]') as HTMLLinkElement;
   if (manifestLink) {

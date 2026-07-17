@@ -6,13 +6,53 @@
     <title>ระบบบันทึกการทำงานและการใช้รถ</title>
     
     <!-- PWA configuration -->
-    <link rel="manifest" href="manifest.json" />
+    <script id="pwa-redirect-and-path">
+      (function() {
+        var path = window.location.pathname;
+        var host = window.location.hostname;
+        
+        // 1. Handle trailing slash redirect for subdirectories on GitHub Pages or custom domains
+        // If the path is a subdirectory without a trailing slash (e.g., /fleet-log-pro), redirect to /fleet-log-pro/
+        if (path && path !== '/' && !path.endsWith('/') && !path.includes('.')) {
+          window.location.replace(window.location.origin + path + '/' + window.location.search + window.location.hash);
+          return;
+        }
+
+        // 2. Compute the precise PWA base path
+        var basePath = '/';
+        if (host.endsWith('.github.io')) {
+          var segments = path.split('/').filter(Boolean);
+          if (segments.length > 0) {
+            basePath = '/' + segments[0] + '/';
+          }
+        } else {
+          if (path.endsWith('.html')) {
+            basePath = path.substring(0, path.lastIndexOf('/') + 1);
+          } else {
+            basePath = path.endsWith('/') ? path : path + '/';
+          }
+        }
+        
+        window.__PWA_BASE_PATH__ = basePath;
+
+        // 3. Inject PWA tags dynamically with the correct base path
+        function injectLink(rel, href, type) {
+          var link = document.createElement('link');
+          link.rel = rel;
+          link.href = basePath + href;
+          if (type) link.type = type;
+          document.head.appendChild(link);
+        }
+
+        injectLink('manifest', 'manifest.json');
+        injectLink('apple-touch-icon', 'icon-192.png');
+        injectLink('icon', 'icon.png', 'image/png');
+      })();
+    </script>
     <meta name="theme-color" content="#0f172a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="บันทึกงาน&ใช้รถ" />
-    <link rel="apple-touch-icon" href="icon-192.png" />
-    <link rel="icon" type="image/png" href="icon.png" />
   </head>
   <body class="bg-slate-950 text-slate-100 min-h-screen">
     <div id="root"></div>
