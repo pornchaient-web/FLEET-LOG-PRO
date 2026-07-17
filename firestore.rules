@@ -4,16 +4,16 @@ service cloud.firestore {
     
     // Work Logs rules: Users can only read/write their own logs
     match /workLogs/{logId} {
-      allow read, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow read, delete: if request.auth != null && (!("userId" in resource.data) || resource.data.userId == null || resource.data.userId == "" || resource.data.userId == request.auth.uid);
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow update: if request.auth != null && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null && (!("userId" in resource.data) || resource.data.userId == null || resource.data.userId == "" || resource.data.userId == request.auth.uid) && request.resource.data.userId == request.auth.uid;
     }
     
     // Car Logs rules: Users can only read/write their own logs
     match /carLogs/{logId} {
-      allow read, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow read, delete: if request.auth != null && (!("userId" in resource.data) || resource.data.userId == null || resource.data.userId == "" || resource.data.userId == request.auth.uid);
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow update: if request.auth != null && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null && (!("userId" in resource.data) || resource.data.userId == null || resource.data.userId == "" || resource.data.userId == request.auth.uid) && request.resource.data.userId == request.auth.uid;
     }
   }
 }
