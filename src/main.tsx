@@ -29,12 +29,12 @@ try {
 
   let appleTouchIcon = document.querySelector('link[rel="apple-touch-icon"]') as HTMLLinkElement;
   if (appleTouchIcon) {
-    appleTouchIcon.href = `${basePath}icon-192.jpg`;
+    appleTouchIcon.href = `${basePath}icon-192.png`;
   }
 
-  let favIcon = document.querySelector('link[type="image/jpeg"]') as HTMLLinkElement;
+  let favIcon = document.querySelector('link[type="image/png"]') as HTMLLinkElement;
   if (favIcon) {
-    favIcon.href = `${basePath}icon.jpg`;
+    favIcon.href = `${basePath}icon.png`;
   }
 } catch (e) {
   console.error("Failed to update dynamic PWA asset links:", e);

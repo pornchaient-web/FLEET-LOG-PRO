@@ -1,17 +1,25 @@
-const CACHE_NAME = "app-cache-v1";
+const CACHE_NAME = "app-cache-v2";
 const ASSETS_TO_CACHE = [
   "./",
   "index.html",
   "manifest.json",
-  "icon.jpg",
-  "icon-192.jpg",
-  "icon-512.jpg"
+  "icon.png",
+  "icon-192.png",
+  "icon-512.png"
 ];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
+      // Robust individual caching: catch failures so the service worker successfully installs
+      // even if one asset fails to cache.
+      return Promise.allSettled(
+        ASSETS_TO_CACHE.map((asset) => {
+          return cache.add(asset).catch((err) => {
+            console.warn(`PWA sw.js: Failed to cache asset during install: ${asset}`, err);
+          });
+        })
+      );
     })
   );
   self.skipWaiting();
