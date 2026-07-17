@@ -24,26 +24,6 @@ const getBasePath = () => {
 
 const basePath = getBasePath();
 
-// Dynamically set manifest and icon links to handle subpaths perfectly (as a fallback or update)
-try {
-  let manifestLink = document.querySelector('link[rel="manifest"]') as HTMLLinkElement;
-  if (manifestLink) {
-    manifestLink.href = `${basePath}manifest.json?v=3`;
-  }
-
-  let appleTouchIcon = document.querySelector('link[rel="apple-touch-icon"]') as HTMLLinkElement;
-  if (appleTouchIcon) {
-    appleTouchIcon.href = `${basePath}icon-192.png?v=3`;
-  }
-
-  let favIcon = document.querySelector('link[type="image/png"]') as HTMLLinkElement;
-  if (favIcon) {
-    favIcon.href = `${basePath}icon.png?v=3`;
-  }
-} catch (e) {
-  console.error("Failed to update dynamic PWA asset links:", e);
-}
-
 // Register Progressive Web App Service Worker dynamically
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
