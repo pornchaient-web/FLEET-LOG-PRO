@@ -13,9 +13,14 @@ createRoot(document.getElementById('root')!).render(
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     // Dynamically calculate base pathname to support hosting under subfolders (like GitHub Pages /FLEET-LOG-PRO/)
-    const base = window.location.pathname.endsWith('/') 
-      ? window.location.pathname 
-      : window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+    let path = window.location.pathname;
+    if (path.endsWith('.html')) {
+      path = path.substring(0, path.lastIndexOf('/') + 1);
+    }
+    if (!path.endsWith('/')) {
+      path += '/';
+    }
+    const base = path;
     
     const swPath = `${base}sw.js`;
     

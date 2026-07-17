@@ -20,6 +20,50 @@
         console.log('PWA index.html: Captured beforeinstallprompt event early!');
         window.dispatchEvent(new CustomEvent('pwa-prompt-captured', { detail: e }));
       });
+
+      // Dynamically patch the manifest.json to support hosting under subfolders (e.g. GitHub Pages)
+      (function() {
+        try {
+          // Bulletproof base path calculation
+          var path = window.location.pathname;
+          if (path.endsWith('.html')) {
+            path = path.substring(0, path.lastIndexOf('/') + 1);
+          }
+          if (!path.endsWith('/')) {
+            path += '/';
+          }
+          var base = path;
+          
+          fetch(base + 'manifest.json')
+            .then(function(res) { return res.json(); })
+            .then(function(manifest) {
+              manifest.start_url = base;
+              manifest.scope = base;
+              manifest.id = base;
+              if (manifest.icons) {
+                manifest.icons = manifest.icons.map(function(icon) {
+                  var src = icon.src.startsWith('./') ? icon.src.substring(2) : icon.src;
+                  if (src.startsWith('/')) src = src.substring(1);
+                  icon.src = base + src;
+                  return icon;
+                });
+              }
+              
+              var blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+              var manifestURL = URL.createObjectURL(blob);
+              var link = document.querySelector('link[rel="manifest"]');
+              if (link) {
+                link.setAttribute('href', manifestURL);
+                console.log('PWA index.html: Dynamic manifest patched successfully for scope:', base);
+              }
+            })
+            .catch(function(err) {
+              console.error('PWA index.html: Failed to fetch/patch manifest.json', err);
+            });
+        } catch (e) {
+          console.error('PWA index.html: Exception in manifest patcher', e);
+        }
+      })();
     </script>
   </head>
   <body class="bg-slate-950 text-slate-100 min-h-screen">
