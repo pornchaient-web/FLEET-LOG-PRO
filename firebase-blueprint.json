@@ -1,0 +1,56 @@
+{
+  "entities": {
+    "workLog": {
+      "title": "Work Log",
+      "description": "Records details of standard technician work including date, job type, customer, province, and dynamic financial payouts.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "jobType": { "type": "string", "enum": ["ติดตั้งใหม่", "Service", "ถอดเครื่อง", "เปลี่ยนซิม", "อื่นๆ"] },
+        "jobTypeOther": { "type": "string" },
+        "commission": { "type": "integer" },
+        "customerUser": { "type": "string" },
+        "customerLicensePlate": { "type": "string" },
+        "province": { "type": "string" },
+        "allowance": { "type": "integer" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "date", "jobType", "commission", "customerUser", "customerLicensePlate", "province", "allowance", "createdAt"]
+    },
+    "carLog": {
+      "title": "Car Usage Log",
+      "description": "Records vehicular odometer metrics, fuel costs, destinations and corresponding customer reference data.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "jobType": { "type": "string", "enum": ["ติดตั้งใหม่", "Service", "ถอดเครื่อง", "เปลี่ยนซิม", "อื่นๆ"] },
+        "jobTypeOther": { "type": "string" },
+        "startPoint": { "type": "string" },
+        "destination": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerUser": { "type": "string" },
+        "destinationProvince": { "type": "string" },
+        "fuelReceiptNo": { "type": "string" },
+        "fuelReceiptCost": { "type": "integer" },
+        "startOdometer": { "type": "integer" },
+        "endOdometer": { "type": "integer" },
+        "fuelLiters": { "type": "number" },
+        "fuelPricePerLiter": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "date", "jobType", "startPoint", "destination", "customerName", "customerUser", "destinationProvince", "startOdometer", "endOdometer", "fuelLiters", "fuelPricePerLiter", "createdAt"]
+    }
+  },
+  "firestore": {
+    "workLogs/{logId}": {
+      "schema": "workLog",
+      "description": "Collection of work logs submitted by users"
+    },
+    "carLogs/{logId}": {
+      "schema": "carLog",
+      "description": "Collection of car usage logs submitted by users"
+    }
+  }
+}
