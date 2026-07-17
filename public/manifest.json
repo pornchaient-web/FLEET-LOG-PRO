@@ -2,12 +2,12 @@
   "name": "ระบบบันทึกการทำงานและการใช้รถ",
   "short_name": "บันทึกงาน&ใช้รถ",
   "description": "ระบบบันทึกข้อมูลการทำงาน การคิดค่าคอมมิชชั่น เบี้ยเลี้ยง และประวัติการใช้รถพร้อมคำนวณน้ำมันและระยะทาง สามารถส่งออกเป็น Excel แยกชีทและเดือนได้",
-  "start_url": ".",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
   "orientation": "any",
-  "scope": "/",
+  "scope": "./",
   "icons": [
     {
       "src": "icon-192.jpg",
