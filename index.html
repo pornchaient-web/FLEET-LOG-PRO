@@ -39,17 +39,6 @@
         
         window.__PWA_BASE_PATH__ = basePath;
 
-        // 3. Update PWA asset links with correct basePath and cache busting v3
-        var version = 'v3';
-        var mLink = document.getElementById('pwa-manifest');
-        if (mLink) mLink.href = basePath + 'manifest.json?v=' + version;
-        
-        var aIcon = document.getElementById('pwa-apple-icon');
-        if (aIcon) aIcon.href = basePath + 'icon-192.png?v=' + version;
-        
-        var fIcon = document.getElementById('pwa-favicon');
-        if (fIcon) fIcon.href = basePath + 'icon.png?v=' + version;
-
         // 4. Capture beforeinstallprompt extremely early to prevent missing it in React load
         window.__PWA_DEFERRED_PROMPT__ = null;
         window.addEventListener('beforeinstallprompt', function(e) {

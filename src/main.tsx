@@ -28,7 +28,7 @@ const basePath = getBasePath();
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
-      .register(`${basePath}sw.js`)
+      .register("./sw.js", { scope: "./" })
       .then((registration) => {
         console.log("PWA Service Worker registered with scope:", registration.scope);
         

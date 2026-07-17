@@ -1,18 +1,17 @@
-const CACHE_NAME = "app-cache-v3";
+const CACHE_NAME = "app-cache-v4";
 const ASSETS_TO_CACHE = [
   "./",
   "index.html",
   "manifest.json",
-  "icon.png",
   "icon-192.png",
-  "icon-512.png"
+  "icon-512.png",
+  "icon.png"
 ];
 
+// Install Event
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      // Robust individual caching: catch failures so the service worker successfully installs
-      // even if one asset fails to cache.
       return Promise.allSettled(
         ASSETS_TO_CACHE.map((asset) => {
           return cache.add(asset).catch((err) => {
@@ -25,12 +24,14 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
+// Activate Event
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
+            console.log("PWA sw.js: Deleting old cache:", cache);
             return caches.delete(cache);
           }
         })
@@ -40,12 +41,14 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// Fetch Event
 self.addEventListener("fetch", (event) => {
-  // Only cache GET requests
+  // Only handle GET requests
   if (event.request.method !== "GET") return;
 
-  // Avoid intercepting Firebase or external APIs directly
   const url = new URL(event.request.url);
+
+  // Bypass Google API calls, Firebase Firestore & Auth, etc.
   if (
     url.origin.includes("firestore.googleapis.com") ||
     url.origin.includes("identitytoolkit.googleapis.com") ||
@@ -54,54 +57,73 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // 1. Navigation requests: Network-First with Cache Fallback (crucial for SPAs)
+  // This avoids background fetch TypeErrors on navigation requests in Chrome!
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Offline fallback
+          return caches.match("index.html").then((cachedResponse) => {
+            if (cachedResponse) return cachedResponse;
+            return caches.match("./");
+          });
+        })
+    );
+    return;
+  }
+
+  // 2. Non-navigation requests (static files, icons, fonts): Stale-While-Revalidate
   event.respondWith(
     caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
       if (cachedResponse) {
-        // Fetch fresh copy in the background to update cache (Stale While Revalidate)
-        fetch(event.request)
-          .then((networkResponse) => {
-            if (networkResponse.status === 200) {
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, networkResponse);
-              });
-            }
-          })
-          .catch(() => {
-            // Ignore network failure offline
-          });
+        // Fetch in background to update cache for next time
+        // Skip for non-http/https schemes (such as chrome-extension://)
+        if (event.request.url.startsWith("http")) {
+          fetch(event.request)
+            .then((networkResponse) => {
+              if (networkResponse.status === 200) {
+                const responseToCache = networkResponse.clone();
+                caches.open(CACHE_NAME).then((cache) => {
+                  cache.put(event.request, responseToCache);
+                });
+              }
+            })
+            .catch(() => {
+              // Ignore background fetch errors
+            });
+        }
         return cachedResponse;
       }
 
       return fetch(event.request)
         .then((networkResponse) => {
-          if (
-            !networkResponse ||
-            networkResponse.status !== 200 ||
-            networkResponse.type !== "basic"
-          ) {
+          if (!networkResponse || networkResponse.status !== 200) {
             return networkResponse;
           }
 
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
+          // Cache eligible GET requests
+          if (event.request.url.startsWith("http")) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
 
           return networkResponse;
         })
-        .catch(() => {
-          // Offline fallback for index.html navigation
-          if (event.request.mode === "navigate") {
-            return caches.match("index.html")
-              .then((res) => {
-                if (res) return res;
-                return caches.match("./")
-                  .then((res2) => {
-                    if (res2) return res2;
-                    return caches.match("/");
-                  });
-              });
-          }
+        .catch((err) => {
+          // Silent catch for image/font loading errors while offline
+          console.warn("PWA sw.js: Fetch failed while offline:", event.request.url, err);
         });
     })
   );
