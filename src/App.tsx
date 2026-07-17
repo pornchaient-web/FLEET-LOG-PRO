@@ -47,8 +47,8 @@ function MainAppContent() {
   const [selectedMonth, setSelectedMonth] = useState("");
 
   // PWA Install Prompt State
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>((window as any).__PWA_DEFERRED_PROMPT__ || null);
+  const [showInstallBanner, setShowInstallBanner] = useState(!!(window as any).__PWA_DEFERRED_PROMPT__);
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isIframe, setIsIframe] = useState(false);
@@ -72,35 +72,59 @@ function MainAppContent() {
     const isFb = ua.includes("fbav") || ua.includes("fb_iab");
     setIsWebView(isLine || isFb);
 
-    const handleBeforeInstallPrompt = (e: Event) => {
+    // Standard handler
+    const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
+      (window as any).__PWA_DEFERRED_PROMPT__ = e;
       setShowInstallBanner(true);
-      console.log("PWA: beforeinstallprompt event fired and captured");
+      console.log("PWA React: beforeinstallprompt event fired and captured");
+    };
+
+    // Custom early capture notification handler
+    const handleCustomPromptCaptured = (e: any) => {
+      if (e.detail) {
+        setDeferredPrompt(e.detail);
+        (window as any).__PWA_DEFERRED_PROMPT__ = e.detail;
+        setShowInstallBanner(true);
+        console.log("PWA React: Received early-captured prompt notification!");
+      }
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("pwa-prompt-captured", handleCustomPromptCaptured);
 
     const handleAppInstalled = () => {
       setDeferredPrompt(null);
+      (window as any).__PWA_DEFERRED_PROMPT__ = null;
       setShowInstallBanner(false);
-      console.log("PWA: Installed successfully");
+      console.log("PWA React: Installed successfully");
     };
 
     window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("pwa-prompt-captured", handleCustomPromptCaptured);
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
 
   const handleInstallPWA = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`PWA: User response to install prompt: ${outcome}`);
+    const promptEvent = deferredPrompt || (window as any).__PWA_DEFERRED_PROMPT__;
+    if (!promptEvent) {
+      console.warn("PWA React: No deferred install prompt available.");
+      return;
+    }
+    try {
+      promptEvent.prompt();
+      const { outcome } = await promptEvent.userChoice;
+      console.log(`PWA React: User response to install prompt: ${outcome}`);
+    } catch (err) {
+      console.error("PWA React: Failed to show install prompt:", err);
+    }
     setDeferredPrompt(null);
+    (window as any).__PWA_DEFERRED_PROMPT__ = null;
     setShowInstallBanner(false);
   };
 

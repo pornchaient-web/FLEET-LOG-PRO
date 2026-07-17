@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ระบบบันทึกการทำงานและการใช้รถ</title>
     
+    <link rel="manifest" href="manifest.json" id="pwa-manifest" />
+    <link rel="apple-touch-icon" href="icon-192.png" id="pwa-apple-icon" />
+    <link rel="icon" type="image/png" href="icon.png" id="pwa-favicon" />
+
     <!-- PWA configuration -->
     <script id="pwa-redirect-and-path">
       (function() {
@@ -34,11 +38,29 @@
         }
         
         window.__PWA_BASE_PATH__ = basePath;
+
+        // 3. Update PWA asset links with correct basePath and cache busting v3
+        var version = 'v3';
+        var mLink = document.getElementById('pwa-manifest');
+        if (mLink) mLink.href = basePath + 'manifest.json?v=' + version;
+        
+        var aIcon = document.getElementById('pwa-apple-icon');
+        if (aIcon) aIcon.href = basePath + 'icon-192.png?v=' + version;
+        
+        var fIcon = document.getElementById('pwa-favicon');
+        if (fIcon) fIcon.href = basePath + 'icon.png?v=' + version;
+
+        // 4. Capture beforeinstallprompt extremely early to prevent missing it in React load
+        window.__PWA_DEFERRED_PROMPT__ = null;
+        window.addEventListener('beforeinstallprompt', function(e) {
+          e.preventDefault();
+          window.__PWA_DEFERRED_PROMPT__ = e;
+          console.log('PWA HTML: Captured beforeinstallprompt event early!');
+          var event = new CustomEvent('pwa-prompt-captured', { detail: e });
+          window.dispatchEvent(event);
+        });
       })();
     </script>
-    <link rel="manifest" href="manifest.json" />
-    <link rel="apple-touch-icon" href="icon-192.png" />
-    <link rel="icon" type="image/png" href="icon.png" />
     <meta name="theme-color" content="#0f172a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
