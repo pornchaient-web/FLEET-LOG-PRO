@@ -16,7 +16,9 @@ import {
   AlertCircle,
   RefreshCw,
   X,
-  ExternalLink
+  ExternalLink,
+  Download,
+  Smartphone
 } from "lucide-react";
 
 function MainAppContent() {
@@ -39,6 +41,43 @@ function MainAppContent() {
 
   // Determine available months in logs or use current month as default
   const [selectedMonth, setSelectedMonth] = useState("");
+
+  // PWA Install Prompt State
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBanner(true);
+      console.log("PWA: beforeinstallprompt event fired and captured");
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null);
+      setShowInstallBanner(false);
+      console.log("PWA: Installed successfully");
+    };
+
+    window.addEventListener("appinstalled", handleAppInstalled);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallPWA = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`PWA: User response to install prompt: ${outcome}`);
+    setDeferredPrompt(null);
+    setShowInstallBanner(false);
+  };
 
   useEffect(() => {
     const todayStr = new Date().toISOString().split("T")[0];
@@ -272,6 +311,16 @@ function MainAppContent() {
             <LogIn size={18} />
             <span>เข้าสู่ระบบด้วย Google</span>
           </button>
+
+          {showInstallBanner && (
+            <button
+              onClick={handleInstallPWA}
+              className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-teal-500/20 to-indigo-500/20 hover:from-teal-500/30 hover:to-indigo-500/30 text-teal-300 border border-teal-500/30 py-3 px-5 rounded-2xl text-xs font-bold transition-all cursor-pointer mt-3"
+            >
+              <Smartphone size={16} />
+              <span>ติดตั้งเป็นแอปมือถือ (PWA) 📱</span>
+            </button>
+          )}
         </div>
       </div>
     );
@@ -442,6 +491,38 @@ function MainAppContent() {
       <footer className="bg-white/5 border-t border-white/10 py-6 mt-12 text-center text-xs text-slate-400 font-sans backdrop-blur-md relative z-10">
         <p>© {new Date().getFullYear()} FLEET LOG PRO • พัฒนาด้วยความพิถีพิถันด้วยธีม Frosted Glass</p>
       </footer>
+
+      {/* Floating PWA Install Banner */}
+      {showInstallBanner && (
+        <div className="fixed bottom-6 right-6 left-6 md:left-auto md:w-96 z-50 bg-slate-900/95 border border-teal-500/30 p-5 rounded-3xl shadow-2xl backdrop-blur-xl text-white flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="flex items-start gap-3">
+            <div className="p-2.5 bg-gradient-to-tr from-teal-500 to-indigo-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-teal-500/20 shrink-0">
+              <Smartphone size={20} />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-sm font-bold text-white">ติดตั้งแอปพลิเคชันมือถือ 📱</h4>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                ติดตั้ง <b>FLEET LOG PRO</b> บนหน้าจอมือถือหรือคอมพิวเตอร์เพื่อเปิดหน้าต่างแยกต่างหาก รันได้รวดเร็ว และใช้งานได้ทันทีแม้ไม่ได้เชื่อมต่อเน็ต
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 justify-end">
+            <button
+              onClick={() => setShowInstallBanner(false)}
+              className="px-4 py-2 hover:bg-white/5 text-slate-400 hover:text-white rounded-xl text-xs font-semibold transition-all cursor-pointer"
+            >
+              ภายหลัง
+            </button>
+            <button
+              onClick={handleInstallPWA}
+              className="px-4 py-2.5 bg-gradient-to-r from-teal-500 to-indigo-500 hover:from-teal-600 hover:to-indigo-600 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-teal-500/20 flex items-center gap-1.5 cursor-pointer"
+            >
+              <Download size={13} />
+              <span>ติดตั้งทันที</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
