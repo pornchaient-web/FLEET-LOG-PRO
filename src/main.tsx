@@ -9,48 +9,16 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 );
 
-// Helper to get the correct path of the base folder for dynamic subfolders (like GitHub Pages)
-const getBasePath = () => {
-  const win = window as any;
-  if (win.__PWA_BASE_PATH__) {
-    return win.__PWA_BASE_PATH__;
-  }
-  const path = window.location.pathname;
-  if (path.endsWith(".html")) {
-    return path.substring(0, path.lastIndexOf("/") + 1);
-  }
-  return path.endsWith("/") ? path : path + "/";
-};
-
-const basePath = getBasePath();
-
-// Register Progressive Web App Service Worker dynamically
+// Unregister PWA Service Worker if active to clean up caches and service workers
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("./sw.js", { scope: "./" })
-      .then((registration) => {
-        console.log("PWA Service Worker registered with scope:", registration.scope);
-        
-        // Check for updates on load to make sure changes apply immediately
-        registration.update();
-        
-        // Listen for new service worker being installed and force activation
-        registration.addEventListener("updatefound", () => {
-          const newWorker = registration.installing;
-          if (newWorker) {
-            newWorker.addEventListener("statechange", () => {
-              if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-                console.log("New Service Worker version available. Force reloading...");
-                window.location.reload();
-              }
-            });
-          }
-        });
-      })
-      .catch((error) => {
-        console.error("PWA Service Worker registration failed:", error);
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (const registration of registrations) {
+      registration.unregister().then((success) => {
+        if (success) {
+          console.log("PWA Service Worker unregistered successfully during cleanup.");
+        }
       });
+    }
   });
 }
 
