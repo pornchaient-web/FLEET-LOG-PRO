@@ -18,7 +18,11 @@ import {
   X,
   ExternalLink,
   Download,
-  Smartphone
+  Smartphone,
+  Info,
+  Share2,
+  PlusSquare,
+  MoreVertical
 } from "lucide-react";
 
 function MainAppContent() {
@@ -45,8 +49,29 @@ function MainAppContent() {
   // PWA Install Prompt State
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [showInstallModal, setShowInstallModal] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isIframe, setIsIframe] = useState(false);
+  const [isWebView, setIsWebView] = useState(false);
 
   useEffect(() => {
+    // Check iOS
+    const ua = window.navigator.userAgent.toLowerCase();
+    const ios = /iphone|ipad|ipod/.test(ua);
+    setIsIOS(ios);
+
+    // Check if in iframe
+    try {
+      setIsIframe(window.self !== window.top);
+    } catch (e) {
+      setIsIframe(true);
+    }
+
+    // Check if open in LINE, Facebook or other webviews
+    const isLine = ua.includes("line");
+    const isFb = ua.includes("fbav") || ua.includes("fb_iab");
+    setIsWebView(isLine || isFb);
+
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -312,15 +337,13 @@ function MainAppContent() {
             <span>เข้าสู่ระบบด้วย Google</span>
           </button>
 
-          {showInstallBanner && (
-            <button
-              onClick={handleInstallPWA}
-              className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-teal-500/20 to-indigo-500/20 hover:from-teal-500/30 hover:to-indigo-500/30 text-teal-300 border border-teal-500/30 py-3 px-5 rounded-2xl text-xs font-bold transition-all cursor-pointer mt-3"
-            >
-              <Smartphone size={16} />
-              <span>ติดตั้งเป็นแอปมือถือ (PWA) 📱</span>
-            </button>
-          )}
+          <button
+            onClick={() => setShowInstallModal(true)}
+            className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-teal-500/20 to-indigo-500/20 hover:from-teal-500/30 hover:to-indigo-500/30 text-teal-300 border border-teal-500/30 py-3.5 px-5 rounded-2xl text-xs font-bold transition-all cursor-pointer mt-3"
+          >
+            <Smartphone size={16} />
+            <span>ติดตั้งแอปมือถือ (PWA) 📱</span>
+          </button>
         </div>
       </div>
     );
@@ -388,6 +411,17 @@ function MainAppContent() {
                 ทั้งหมด
               </button>
             </div>
+
+            {/* PWA Install Button */}
+            <button
+              onClick={() => setShowInstallModal(true)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 hover:bg-indigo-500/25 rounded-xl transition-all cursor-pointer font-semibold text-xs backdrop-blur-md"
+              title="ติดตั้งเป็นแอปพลิเคชันมือถือ PWA"
+            >
+              <Smartphone size={14} />
+              <span className="hidden sm:inline">ติดตั้งแอปมือถือ</span>
+              <span className="sm:hidden">แอป</span>
+            </button>
 
             {/* User Auth Info */}
             <div className="flex items-center space-x-2 pl-2 border-l border-white/10">
@@ -520,6 +554,218 @@ function MainAppContent() {
               <Download size={13} />
               <span>ติดตั้งทันที</span>
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* PWA Installation Helper Modal */}
+      {showInstallModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-slate-950/80 backdrop-blur-md cursor-pointer"
+            onClick={() => setShowInstallModal(false)}
+          ></div>
+
+          {/* Modal Card */}
+          <div className="bg-slate-900 border border-slate-700/50 rounded-3xl max-w-md w-full p-6 shadow-2xl relative z-10 text-white max-h-[85vh] overflow-y-auto animate-in scale-in duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-gradient-to-tr from-teal-400 to-indigo-500 rounded-xl flex items-center justify-center text-white">
+                  <Smartphone size={18} />
+                </div>
+                <h3 className="text-base font-bold text-slate-100">ขั้นตอนการติดตั้งแอปมือถือ 📱</h3>
+              </div>
+              <button 
+                onClick={() => setShowInstallModal(false)}
+                className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="space-y-5">
+              
+              {/* Dynamic Status Badges */}
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="p-2.5 bg-white/5 rounded-xl border border-white/5 text-center">
+                  <span className="text-slate-400 block mb-0.5">ระบบปฏิบัติการ</span>
+                  <span className="font-bold text-teal-300">{isIOS ? "iOS (iPhone/iPad)" : "Android / Desktop"}</span>
+                </div>
+                <div className="p-2.5 bg-white/5 rounded-xl border border-white/5 text-center">
+                  <span className="text-slate-400 block mb-0.5">สภาพแวดล้อม</span>
+                  <span className="font-bold text-indigo-300">
+                    {isIframe ? "กรอบไอเฟรม" : isWebView ? "เบราว์เซอร์ในแอป" : "เบราว์เซอร์ปกติ"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Scenario 1: Inside Iframe (AI Studio Preview) */}
+              {isIframe && (
+                <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl space-y-2.5 text-xs text-amber-200">
+                  <div className="flex items-start gap-2">
+                    <Info size={16} className="text-amber-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-white mb-0.5">พบบล็อกเกอร์ความปลอดภัย (Iframe detected)</p>
+                      <p className="leading-relaxed">
+                        เบราว์เซอร์จะบล็อกการติดตั้งแอป PWA เมื่ออยู่ภายใต้ช่องพรีวิวแอปของ AI Studio กรุณากดปุ่มด้านล่างเพื่อเปิดแอปในหน้าต่างเต็มรูปแบบ (New Tab) เพื่อเปิดใช้งานปุ่มติดตั้งครับ
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href={window.location.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-center gap-1.5 w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl transition-all text-center mt-1 cursor-pointer"
+                  >
+                    <span>เปิดแอปในหน้าต่างเต็มรูปแบบ (New Tab)</span>
+                    <ExternalLink size={14} />
+                  </a>
+                </div>
+              )}
+
+              {/* Scenario 2: Webview like LINE / Facebook */}
+              {isWebView && (
+                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl space-y-2.5 text-xs text-red-200">
+                  <div className="flex items-start gap-2">
+                    <Info size={16} className="text-red-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-white mb-0.5">คุณเปิดจากแอปแชท (เช่น LINE / Facebook)</p>
+                      <p className="leading-relaxed">
+                        เบราว์เซอร์ของแอปแชทไม่รองรับการติดตั้งแอปมือถือโดยตรง กรุณาย้ายไปเปิดใน Chrome หรือ Safari เพื่อทำการติดตั้งครับ
+                      </p>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5 pl-2 border-l-2 border-red-500/30 font-medium text-slate-300">
+                    <p>1. กดปุ่มจุด 3 จุด <MoreVertical size={12} className="inline" /> หรือปุ่มเมนูที่มุมขวาบน</p>
+                    <p>2. เลือก <b>"เปิดด้วยเบราว์เซอร์เริ่มต้น"</b> หรือ <b>"เปิดใน Chrome / Safari"</b></p>
+                  </div>
+                </div>
+              )}
+
+              {/* Step instructions depending on OS */}
+              {!isIframe && !isWebView && (
+                <div className="space-y-4">
+                  {isIOS ? (
+                    /* iOS Specific Steps */
+                    <div className="space-y-4 text-xs">
+                      <p className="text-slate-300">
+                        สำหรับอุปกรณ์ <b>iOS (iPhone / iPad)</b> จำเป็นต้องใช้เบราว์เซอร์ <b>Safari</b> ในการติดตั้งตามขั้นตอนนี้ครับ:
+                      </p>
+                      
+                      <div className="space-y-3.5 bg-white/5 p-4 rounded-2xl border border-white/5">
+                        <div className="flex items-start gap-3">
+                          <div className="w-6 h-6 bg-indigo-500/20 text-indigo-300 rounded-lg flex items-center justify-center font-bold shrink-0">1</div>
+                          <div>
+                            <p className="font-bold text-white">แตะปุ่มแชร์ (Share) ใน Safari</p>
+                            <p className="text-slate-400 leading-relaxed mt-0.5">
+                              กดไอคอนกล่องที่มีลูกศรชี้ขึ้น <Share2 size={13} className="inline text-blue-400 font-bold mx-0.5" /> ที่แถบเครื่องมือด้านล่างของจอภาพ
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <div className="w-6 h-6 bg-indigo-500/20 text-indigo-300 rounded-lg flex items-center justify-center font-bold shrink-0">2</div>
+                          <div>
+                            <p className="font-bold text-white">เลือก "เพิ่มไปยังหน้าจอโฮม" (Add to Home Screen)</p>
+                            <p className="text-slate-400 leading-relaxed mt-0.5">
+                              เลื่อนรายการเมนูลงมาด้านล่าง แล้วแตะปุ่ม <PlusSquare size={13} className="inline text-white mx-0.5" /> <b>"เพิ่มไปยังหน้าจอโฮม"</b>
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <div className="w-6 h-6 bg-indigo-500/20 text-indigo-300 rounded-lg flex items-center justify-center font-bold shrink-0">3</div>
+                          <div>
+                            <p className="font-bold text-white">กดปุ่ม "เพิ่ม" (Add)</p>
+                            <p className="text-slate-400 leading-relaxed mt-0.5">
+                              พิมพ์ชื่อแอปตามต้องการ จากนั้นแตะคำว่า <b>"เพิ่ม"</b> ที่มุมขวาบนของหน้าจอ แอปจะปรากฏขึ้นบนมือถือเสมือนแอปจริงทันที!
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Android / Desktop Steps */
+                    <div className="space-y-4 text-xs">
+                      {deferredPrompt ? (
+                        <div className="space-y-3 bg-teal-500/10 border border-teal-500/20 p-4 rounded-2xl">
+                          <p className="text-teal-200">
+                            เบราว์เซอร์ของคุณพร้อมสำหรับการติดตั้งเป็นแอปพลิเคชันอย่างเป็นทางการแล้วครับ!
+                          </p>
+                          <button
+                            onClick={handleInstallPWA}
+                            className="flex items-center justify-center gap-2 w-full py-2.5 bg-gradient-to-r from-teal-400 to-indigo-500 hover:from-teal-500 hover:to-indigo-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-teal-500/20 cursor-pointer text-sm"
+                          >
+                            <Download size={15} />
+                            <span>คลิกเพื่อติดตั้งแอปที่นี่ 📥</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <p className="text-slate-300">
+                            คุณสามารถติดตั้งแบบแมนนวลผ่านเบราว์เซอร์ <b>Chrome / Edge / Firefox</b> ได้อย่างง่ายดาย:
+                          </p>
+                          
+                          <div className="space-y-3.5 bg-white/5 p-4 rounded-2xl border border-white/5">
+                            <div className="flex items-start gap-3">
+                              <div className="w-6 h-6 bg-teal-500/20 text-teal-300 rounded-lg flex items-center justify-center font-bold shrink-0">1</div>
+                              <div>
+                                <p className="font-bold text-white">กดปุ่มเมนู 3 จุดของเบราว์เซอร์</p>
+                                <p className="text-slate-400 leading-relaxed mt-0.5">
+                                  แตะไอคอน 3 จุด <MoreVertical size={13} className="inline text-slate-300 mx-0.5" /> ที่มุมบนขวา (สำหรับ Android) หรือด้านล่างสุดของเบราว์เซอร์
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                              <div className="w-6 h-6 bg-teal-500/20 text-teal-300 rounded-lg flex items-center justify-center font-bold shrink-0">2</div>
+                              <div>
+                                <p className="font-bold text-white">เลือก "ติดตั้งแอป" (Install App)</p>
+                                <p className="text-slate-400 leading-relaxed mt-0.5">
+                                  แตะเมนูที่ระบุว่า <b>"ติดตั้งแอป"</b> หรือ <b>"เพิ่มไปยังหน้าจอหลัก" (Add to Home screen)</b>
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                              <div className="w-6 h-6 bg-teal-500/20 text-teal-300 rounded-lg flex items-center justify-center font-bold shrink-0">3</div>
+                              <div>
+                                <p className="font-bold text-white">กดยืนยันการติดตั้ง</p>
+                                <p className="text-slate-400 leading-relaxed mt-0.5">
+                                  กดยืนยันการติดตั้งในกล่องป๊อปอัป ระบบจะเพิ่มแอปพลิเคชันลงบนหน้าจอมือถือของคุณทันทีครับ
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* General Benefit Section */}
+              <div className="p-3.5 bg-white/5 rounded-2xl text-[11px] text-slate-400 leading-relaxed flex items-start gap-2 border border-white/5">
+                <Info size={14} className="text-indigo-400 shrink-0 mt-0.5" />
+                <p>
+                  <b>สิทธิประโยชน์:</b> PWA จะรันแยกในหน้าต่างแบบสมาร์ทโฟน ไม่มีแถบแอดเดรสบาร์กวนใจ ทำงานออฟไลน์ได้ รวดเร็ว และลื่นไหลเสมือนแอปเนทีฟบน App Store หรือ Play Store เลยครับ
+                </p>
+              </div>
+
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-white/10 pt-4 mt-5 flex justify-end">
+              <button
+                onClick={() => setShowInstallModal(false)}
+                className="px-5 py-2 bg-slate-800 hover:bg-slate-700 hover:text-white text-slate-300 rounded-xl text-xs font-bold transition-all cursor-pointer border border-white/5"
+              >
+                ปิดหน้าต่าง
+              </button>
+            </div>
           </div>
         </div>
       )}
