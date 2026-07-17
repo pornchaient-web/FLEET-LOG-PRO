@@ -13,7 +13,7 @@ createRoot(document.getElementById('root')!).render(
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
-      .register("/sw.js")
+      .register("sw.js")
       .then((registration) => {
         console.log("PWA Service Worker registered with scope:", registration.scope);
       })
