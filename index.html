@@ -34,11 +34,22 @@
         }
         
         window.__PWA_BASE_PATH__ = basePath;
+
+        // 3. Dynamically inject PWA links with correct basePath and cache busting
+        var version = 'v3';
+        function injectLink(rel, href, type) {
+          var link = document.createElement('link');
+          link.rel = rel;
+          link.href = basePath + href + '?v=' + version;
+          if (type) link.type = type;
+          document.head.appendChild(link);
+        }
+
+        injectLink('manifest', 'manifest.json');
+        injectLink('apple-touch-icon', 'icon-192.png');
+        injectLink('icon', 'icon.png', 'image/png');
       })();
     </script>
-    <link rel="manifest" href="manifest.json" />
-    <link rel="apple-touch-icon" href="icon-192.png" />
-    <link rel="icon" type="image/png" href="icon.png" />
     <meta name="theme-color" content="#0f172a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />

@@ -1,4 +1,4 @@
-const CACHE_NAME = "app-cache-v2";
+const CACHE_NAME = "app-cache-v3";
 const ASSETS_TO_CACHE = [
   "./",
   "index.html",
@@ -92,7 +92,15 @@ self.addEventListener("fetch", (event) => {
         .catch(() => {
           // Offline fallback for index.html navigation
           if (event.request.mode === "navigate") {
-            return caches.match("index.html");
+            return caches.match("index.html")
+              .then((res) => {
+                if (res) return res;
+                return caches.match("./")
+                  .then((res2) => {
+                    if (res2) return res2;
+                    return caches.match("/");
+                  });
+              });
           }
         });
     })
