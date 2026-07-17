@@ -337,13 +337,23 @@ function MainAppContent() {
             <span>เข้าสู่ระบบด้วย Google</span>
           </button>
 
-          <button
-            onClick={() => setShowInstallModal(true)}
-            className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-teal-500/20 to-indigo-500/20 hover:from-teal-500/30 hover:to-indigo-500/30 text-teal-300 border border-teal-500/30 py-3.5 px-5 rounded-2xl text-xs font-bold transition-all cursor-pointer mt-3"
-          >
-            <Smartphone size={16} />
-            <span>ติดตั้งแอปมือถือ (PWA) 📱</span>
-          </button>
+          {deferredPrompt ? (
+            <button
+              onClick={handleInstallPWA}
+              className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-3.5 px-5 rounded-2xl text-sm font-bold transition-all shadow-lg shadow-teal-500/20 cursor-pointer mt-3 animate-pulse"
+            >
+              <Download size={18} />
+              <span>ติดตั้งแอปมือถือทันที (PWA) 📥</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowInstallModal(true)}
+              className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-teal-500/20 to-indigo-500/20 hover:from-teal-500/30 hover:to-indigo-500/30 text-teal-300 border border-teal-500/30 py-3.5 px-5 rounded-2xl text-xs font-bold transition-all cursor-pointer mt-3"
+            >
+              <Smartphone size={16} />
+              <span>ติดตั้งแอปมือถือ (PWA) 📱</span>
+            </button>
+          )}
         </div>
       </div>
     );
@@ -413,15 +423,27 @@ function MainAppContent() {
             </div>
 
             {/* PWA Install Button */}
-            <button
-              onClick={() => setShowInstallModal(true)}
-              className="flex items-center gap-1.5 px-3 py-2 bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 hover:bg-indigo-500/25 rounded-xl transition-all cursor-pointer font-semibold text-xs backdrop-blur-md"
-              title="ติดตั้งเป็นแอปพลิเคชันมือถือ PWA"
-            >
-              <Smartphone size={14} />
-              <span className="hidden sm:inline">ติดตั้งแอปมือถือ</span>
-              <span className="sm:hidden">แอป</span>
-            </button>
+            {deferredPrompt ? (
+              <button
+                onClick={handleInstallPWA}
+                className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600 rounded-xl transition-all cursor-pointer font-bold text-xs shadow-lg shadow-emerald-500/25 animate-pulse"
+                title="ติดตั้งแอปพลิเคชันอย่างเป็นทางการทันที"
+              >
+                <Download size={14} />
+                <span className="hidden sm:inline">ติดตั้งแอปทันที</span>
+                <span className="sm:hidden">ติดตั้ง</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowInstallModal(true)}
+                className="flex items-center gap-1.5 px-3 py-2 bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 hover:bg-indigo-500/25 rounded-xl transition-all cursor-pointer font-semibold text-xs backdrop-blur-md"
+                title="ติดตั้งเป็นแอปพลิเคชันมือถือ PWA"
+              >
+                <Smartphone size={14} />
+                <span className="hidden sm:inline">ติดตั้งแอปมือถือ</span>
+                <span className="sm:hidden">แอป</span>
+              </button>
+            )}
 
             {/* User Auth Info */}
             <div className="flex items-center space-x-2 pl-2 border-l border-white/10">
