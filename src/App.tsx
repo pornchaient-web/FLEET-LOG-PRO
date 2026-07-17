@@ -648,6 +648,26 @@ function MainAppContent() {
                 </div>
               </div>
 
+              {/* Incognito & Shortcut Warning */}
+              <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl space-y-2.5 text-xs text-amber-200">
+                <div className="flex items-start gap-2">
+                  <Info size={16} className="text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-white mb-0.5">⚠️ หากขึ้นคำว่า "สร้างทางลัด" (Create Shortcut) และไอคอนตัวอักษร "G" สีเทา</p>
+                    <p className="leading-relaxed text-slate-300">
+                      แสดงว่าคุณเปิดแอปนี้ใน <span className="text-amber-300 font-bold">"โหมดไม่ระบุตัวตน" (Incognito Mode / Private Tab)</span> ของ Chrome ซึ่งระบบความปลอดภัยจะบล็อกไม่ให้ลงทะเบียนแอป (PWA) และบีบให้สร้างบุ๊กมาร์กทางลัดธรรมดาแทนครับ
+                    </p>
+                    <p className="mt-2 font-bold text-white">💡 วิธีแก้ไขให้ติดตั้งแอปของจริงได้:</p>
+                    <ol className="list-decimal pl-4 mt-1 space-y-1 text-slate-300 font-medium">
+                      <li>คัดลอกลิงก์เว็บไซต์นี้ไว้</li>
+                      <li>ปิดหน้าต่างโหมดไม่ระบุตัวตนออก</li>
+                      <li>เปิดแท็บใหม่ใน <span className="text-emerald-400 font-bold">"โหมดปกติของ Chrome"</span> แล้ววางลิงก์เพื่อเปิดแอป</li>
+                      <li>กดปุ่มติดตั้งอีกครั้ง จะปรากฏหน้าต่าง <span className="text-emerald-400 font-bold">"ติดตั้งแอป" (Install App)</span> พร้อมโลโก้แอปสีเขียวอย่างสวยงามทันที!</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+
               {/* Scenario 1: Inside Iframe (AI Studio Preview) */}
               {isIframe && (
                 <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl space-y-2.5 text-xs text-amber-200">
